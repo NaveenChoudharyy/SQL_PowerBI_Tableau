@@ -62,37 +62,31 @@ select * from product_sales;
 
 
 
-with cte1 as 
-(select p.product_name, sum(p.unit_price*p.quantity) as sum_rev
-from product_sales as p
-group by p.product_name),
-cte2 as
-(select sum(p.quantity*p.unit_price) as tot_price from product_sales as p)
-select product_name, sum_rev, 100*sum_rev/(1.0*cte2.tot_price) as percent_ from cte1
-cross join cte2
-
-
-
-
-
-
-with cte1 as (
-select p.product_name, sum(p.unit_price*p.quantity) as rev
-from product_sales as p
-group by p.product_name),
-cte2 as (
-select sum(p.unit_price*p.quantity) as tot_rev 
-from product_sales as p),
-cte3 as (
-select product_name, 100*rev/(1.0*tot_rev) as percent_ from cte1
-cross join cte2)
-select * from cte3
-
-
-
-
-
-
+WITH product_revenue AS (
+    SELECT
+        p.product_name,
+        SUM(p.unit_price * p.quantity) AS product_revenue
+    FROM product_sales AS p
+    GROUP BY p.product_name
+),
+total_revenue AS (
+    SELECT
+        SUM(p.unit_price * p.quantity) AS total_revenue
+    FROM product_sales AS p
+),
+revenue_percentage AS (
+    SELECT
+        product_name,
+        100.0 * product_revenue / total_revenue AS revenue_percent
+    FROM product_revenue
+    CROSS JOIN total_revenue
+)
+SELECT
+    product_name,
+    revenue_percent,
+    SUM(revenue_percent) OVER (ORDER BY revenue_percent DESC) AS cumulative_percent
+FROM revenue_percentage
+ORDER BY revenue_percent DESC;
 
 
 

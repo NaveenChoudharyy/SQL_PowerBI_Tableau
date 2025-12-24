@@ -34,5 +34,5 @@
 
 
 ----q7----------Pareto Principle
---
---
+-- 80-20 analysis
+--  
