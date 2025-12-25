@@ -1,3 +1,6 @@
+
+use ankit_bansal_udemy;
+
 ----q1----------ICC Points Table
 -- union vs union all
 -- Cte
