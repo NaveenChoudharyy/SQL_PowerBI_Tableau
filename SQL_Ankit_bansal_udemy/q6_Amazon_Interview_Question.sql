@@ -13,3 +13,16 @@ monday-2
 friday-6
 saturday-7
 */
+
+
+
+select datename(weekday, getdate()) as dte;
+
+
+SELECT DATEADD(
+           day,
+           ( (7 + 1 - DATEPART(weekday, '2025-01-10')) % 7 )
+           + ((3 - 1) * 7),
+           '2025-01-10'
+       );
+
