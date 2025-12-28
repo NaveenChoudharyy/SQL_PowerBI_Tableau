@@ -5,6 +5,8 @@ use ankit_bansal_udemy;
 -------------------------------Friend's score-------------------------------
 -------------------------------Friend's score-------------------------------
 
+drop table friend;
+drop table person;
 
 Create table friend (pid int, fid int);
 insert into friend (pid , fid ) values ('1','2');
@@ -21,7 +23,7 @@ insert into person(PersonID,Name ,Score) values('1','Alice','88');
 insert into person(PersonID,Name ,Score) values('2','Bob','11');
 insert into person(PersonID,Name ,Score) values('3','Devis','27');
 insert into person(PersonID,Name ,Score) values('4','Tara','45');
-insert into person(PersonID,Name ,Score) values('5','John','63');
+insert into person(PersonID,Name ,Score) values('5','Johny','63');
 
 select * from person;
 select * from friend;
