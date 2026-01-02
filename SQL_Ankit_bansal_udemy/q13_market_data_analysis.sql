@@ -41,8 +41,8 @@ insert into orders values (1,'2019-08-01',4,1,2),(2,'2019-08-02',2,1,3),(3,'2019
 
 
 /*
-MARKET ANALYSIS: Write an sql query to find for each seller, weather the brand of the second item (by date) they sold is their favor brand
-If a seller sold less then two items, report the answer for that seller as no. o/p
+MARKET ANALYSIS: Write an sql query to find for each seller, weather the brand of the second item (by date) they sold is their 
+favorite brand. If a seller sold less then two items, report the answer for that seller as no. o/p
 
 seller_id		2nd_item_fav_brand
 1				yes/no
@@ -57,3 +57,72 @@ Select * from items;
 Select * from orders;
 
 
+---- My solution : 1
+with cte1 as (
+	Select o.seller_id,
+	case when i.item_brand = u.favorite_brand then 'YES' else 'NO' end as item_fav_brand,
+	row_number() over(partition by o.seller_id order by o.order_date) as rn
+	from orders as o
+	left join items as i
+	on i.item_id = o.item_id
+	left join users as u
+	on u.user_id = o.seller_id ),
+cte2 as (
+	select seller_id, item_fav_brand from cte1 
+	where rn = 2),
+cte3 as (
+	select user_id, 'no' as item_fav_brand from users ),
+cte4 as (
+	select * from cte2
+	union all
+	select * from cte3 ),
+cte5 as (
+	select top (select count(*) from users) * from cte4 )
+select * from cte5
+order by seller_id;
+
+
+---- My solution : 2
+with cte1 as (
+	select *, 
+	row_number() over(partition by o.seller_id order by o.order_date) as rn
+	from orders as o ),
+cte2 as (
+	select u.user_id, coalesce(rn, 2) as rn,
+	case when i.item_brand = u.favorite_brand then 'YES' else 'NO' end as item_fav_brand
+	from cte1
+	left join items as i
+	on i.item_id = cte1.item_id
+	right join users as u
+	on u.user_id = cte1.seller_id )
+select user_id, item_fav_brand from cte2
+where rn = 2
+
+
+---- My solution : 3
+with cte1 as (
+	select *, 
+	row_number() over(partition by o.seller_id order by o.order_date) as rn
+	from orders as o )
+select u.user_id,
+case when i.item_brand = u.favorite_brand then 'YES' else 'NO' end as item_fav_brand
+from cte1
+left join items as i
+on i.item_id = cte1.item_id
+right join users as u
+on u.user_id = cte1.seller_id and rn=2
+
+
+---- My solution : 4
+with cte1 as (
+	select *, 
+	row_number() over(partition by o.seller_id order by o.order_date) as rn
+	from orders as o )
+select u.user_id,
+case when i.item_brand = u.favorite_brand then 'YES' else 'NO' end as item_fav_brand
+from cte1
+left join items as i
+on i.item_id = cte1.item_id
+right join users as u
+on u.user_id = cte1.seller_id
+where rn = 2 or rn is null
