@@ -33,50 +33,38 @@ select * from spending;
 
 
 
+
+with cte
+select s1.spend_date, s2.total_amount, s2.user_id 
+from (select distinct spend_date from spending) as s1
+left join (
+	select spend_date, user_id,
+	sum(amount) as total_amount 
+	from spending
+	group by spend_date, user_id
+	having count(platform) > 1 ) as s2
+on s1.spend_date = s2.spend_date
+
+
+
 with cte1 as (
-	select s.user_id, s.spend_date from spending as s
-	group by s.user_id, s.spend_date
-	having count(distinct s.platform) = 1 ),
+	select distinct spend_date from spending),
 cte2 as (
-	select s.* from cte1
-	left join spending as s
-	on cte1.user_id = s.user_id and cte1.spend_date = s.spend_date),
+	select spend_date, user_id,
+	sum(amount) as total_amount 
+	from spending
+	group by spend_date, user_id
+	having count(platform) > 1),
 cte3 as (
-	select cte2.spend_date, cte2.platform,
-	sum(cte2.amount) as total_amount,
-	count( distinct cte2.user_id) as total_users from cte2
-	group by cte2.spend_date, cte2.platform),
+	select cte1.spend_date, cte2.total_amount, cte2.user_id 
+	from cte1 left join cte2
+	on cte1.spend_date = cte2.spend_date),
 cte4 as (
-	select s.* from cte1
-	outer join spending as s
-	on cte1.user_id = s.user_id and cte1.spend_date = s.spend_date)
-select * from cte4
-
-
-
-
-select s.spend_date, 'both' as [platform], 
-sum(s.amount) as total_amount, 
-count(distinct user_id) as total_users 
-from spending as s
-group by s.spend_date, [platform]
-having count(distinct user_id) > 1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	select cte3.spend_date, cte3.total_amount, cte3.user_id,
+	'both' as [platform]
+	from cte3
+	left join spending as s1
+	on s1.spend_date = cte3.spend_date and s1.user_id = cte3.user_id)
+select * from cte3
 
 
