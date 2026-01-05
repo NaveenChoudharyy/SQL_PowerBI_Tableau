@@ -34,16 +34,7 @@ select * from spending;
 
 
 
-with cte
-select s1.spend_date, s2.total_amount, s2.user_id 
-from (select distinct spend_date from spending) as s1
-left join (
-	select spend_date, user_id,
-	sum(amount) as total_amount 
-	from spending
-	group by spend_date, user_id
-	having count(platform) > 1 ) as s2
-on s1.spend_date = s2.spend_date
+
 
 
 
