@@ -29,33 +29,27 @@ and both mobile and desktop togather for each date.
 select * from spending;
 
 
+---------------------------------------- Solution ----------------------------------------
 
 
-
-
-
-
-
-
-
-with cte1 as (
-	select distinct spend_date from spending),
-cte2 as (
-	select spend_date, user_id,
-	sum(amount) as total_amount 
-	from spending
-	group by spend_date, user_id
-	having count(platform) > 1),
-cte3 as (
-	select cte1.spend_date, cte2.total_amount, cte2.user_id 
-	from cte1 left join cte2
-	on cte1.spend_date = cte2.spend_date),
-cte4 as (
-	select cte3.spend_date, cte3.total_amount, cte3.user_id,
-	'both' as [platform]
-	from cte3
-	left join spending as s1
-	on s1.spend_date = cte3.spend_date and s1.user_id = cte3.user_id)
-select * from cte3
-
-
+with cte as (
+		select s.spend_date, 
+		max(s.platform) as [platform], sum(s.amount) as amount,
+		count(distinct s.user_id) as total_users
+		from spending as s
+		group by s.spend_date, s.user_id
+		having count(distinct s.platform) = 1
+	union all
+		select s.spend_date, 
+		'both' as [platform], sum(s.amount) as amount,
+		count(distinct s.user_id) as total_users
+		from spending as s
+		group by s.spend_date, s.user_id
+		having count(distinct s.platform) > 1
+	union all
+		select distinct s.spend_date, 'both' as [platform], 0 as amount, null as total_users 
+		from spending as s)
+select spend_date, [platform], sum(amount) as total_amount, count(distinct total_users) as total_users 
+from cte 
+group by spend_date, [platform] 
+order by spend_date, [platform] desc
