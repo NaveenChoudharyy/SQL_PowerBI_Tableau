@@ -2,6 +2,41 @@
 use ankit_bansal_udemy;
 
 -------------------------------Recursive cte-------------------------------
+
+-- Example of recursive cte for sql server
+
+WITH nums AS (
+    -- Anchor member
+    SELECT 1 AS n
+
+    UNION ALL
+
+    -- Recursive member
+    SELECT n + 1
+    FROM nums
+    WHERE n < 5
+)
+SELECT n
+FROM nums;
+
+
+-- Example of recursive cte for mysql
+/*
+WITH RECURSIVE nums AS (
+    -- Anchor member
+    SELECT 1 AS n
+
+    UNION ALL
+
+    -- Recursive member
+    SELECT n + 1
+    FROM nums
+    WHERE n < 5
+)
+SELECT *
+FROM nums;
+*/
+
 -------------------------------Recursive cte-------------------------------
 
 drop table sales;
@@ -16,3 +51,23 @@ insert into sales values
 
 select * from sales;
 
+
+
+with r_cte as (
+select min(s.period_start) as min_dte, max(s.period_end) as max_dte from sales as s
+
+union all
+
+select dateadd(day, 1, min_dte) , max_dte from r_cte as s
+where dateadd(day, 1, min_dte) <= max_dte )
+
+select s.product_id as product_id, 
+year(min_dte) as report_year, 
+sum(s.average_daily_sales) as total_amount 
+from r_cte
+left join sales as s
+on r_cte.min_dte between s.period_start and s.period_end
+group by s.product_id, year(min_dte)
+order by s.product_id, year(min_dte)
+
+option (maxrecursion 1000);
