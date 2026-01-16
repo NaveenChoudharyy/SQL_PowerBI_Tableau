@@ -36,25 +36,42 @@ select * from customer_budget;
 
 
 with cte1 as (
-select * from customer_budget as c
-left join products as p
-on p.cost <= budget
+	select *
+	, sum(cost) over(partition by customer_id order by cost) as running_total
+	from customer_budget as c
+	join products as p
+	on p.cost <= budget
 ), cte2 as (
-select *,
-sum(cost) over(partition by customer_id order by customer_id, cost) as running_total
-from cte1)
-, cte3 as (
-select * from cte2
-where running_total <= budget
+	select 
+	customer_id, budget, product_id, cost 
+	from cte1 
+	where running_total <= budget
 )
-select customer_id, budget, count(1) as no_of_products,  
-STRING_AGG(product_id, ', ') WITHIN GROUP (order by customer_id, cost) as list_of_products
-from cte3
-group by customer_id, budget
+select 
+customer_id, budget, count(1) as no_of_products,
+string_agg(product_id, ',') within group (order by cost) as list_of_products
+from cte2
+group by customer_id, budget;
+
+
+--------------------------------------- My Solution-2 ---------------------------------------
 
 
 
-
-
-
-
+with cte1 as (
+	select *
+	, sum(cost) over(partition by customer_id order by cost) as running_total
+	from customer_budget as c
+	join products as p
+	on p.cost <= budget
+), cte2 as (
+	select 
+	customer_id, budget, product_id, cost 
+	from cte1 
+	where running_total <= budget
+)
+select 
+customer_id, budget, count(1) as no_of_products,
+string_agg(product_id, ',') as list_of_products
+from cte2
+group by customer_id, budget;
