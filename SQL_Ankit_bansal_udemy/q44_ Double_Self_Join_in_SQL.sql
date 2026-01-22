@@ -50,4 +50,3 @@ select e1.emp_id, e1.emp_name, e2.emp_name as manager_name, e3.emp_name as senio
 from emp as e1
 left join emp as e2 on e1.manager_id = e2.emp_id
 left join emp as e3 on e2.manager_id = e3.emp_id;
-
